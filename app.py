@@ -6,7 +6,7 @@ import pandas as pd
 
 st.title("Google Search API with SerpAPI")
 
-keywords = st.text_area("Keywords (semicolon-separated)", "bora bora; maldives; hawaii")
+keywords = st.text_area("Keywords (semicolon-separated)", "bora bora; skin flooding trend; longevity research")
 locations = st.text_area("Locations (semicolon-separated)", "Austin, Texas, United States; New York, New York, United States; San Francisco, California, United States")
 google_domain = st.text_input("Google Domain", "google.com")
 gl = st.text_input("GL", "us")
