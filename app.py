@@ -100,8 +100,12 @@ if st.button("Search"):
             mime='text/csv',
         )
 
-    # Export raw HTML files
+    # Display and export raw HTML files
     if raw_html_files:
+        st.write("### Raw HTML Files")
+        for entry in raw_html_files:
+            st.write(f"Keyword: {entry['keyword']}, Location: {entry['location']}, [Raw HTML File]({entry['raw_html_file']})")
+
         df_raw_html = pd.DataFrame(raw_html_files)
         csv_raw_html = df_raw_html.to_csv(index=False)
         st.download_button(
