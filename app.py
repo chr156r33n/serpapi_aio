@@ -38,10 +38,8 @@ if st.button("Search"):
 
     for idx, results in enumerate(all_results):
         st.write(f"### Results from API Call {idx + 1}")
-        for result in results.get('organic_results', []):
-            st.write(f"**Title:** {result.get('title')}")
-            st.write(f"**Link:** {result.get('link')}")
-            st.write(f"**Snippet:** {result.get('snippet')}\n")
-            answer_box = result.get('answer_box')
-            if answer_box:
-                st.write(f"**Answer Box:** {answer_box}\n")
+        answer_box = results.get('answer_box')
+        if answer_box:
+            st.write(f"**Answer Box:** {answer_box}\n")
+        else:
+            st.write("No answer box found in this result.")
