@@ -1,5 +1,5 @@
 import streamlit as st
-from serpapi import GoogleSearch
+from google-search-results import GoogleSearch
 
 # Streamlit UI for input parameters
 st.title("Google Search API with SerpAPI")
