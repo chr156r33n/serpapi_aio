@@ -20,6 +20,9 @@ if st.button("Search"):
     keyword_list = [keyword.strip() for keyword in keywords.split(";")]
     location_list = [location.strip() for location in locations.split(";")]
 
+    combined_similarity_data = []
+    raw_html_files = []
+
     for keyword in keyword_list:
         st.write(f"## Results for Keyword: {keyword}")
         all_results = []
@@ -43,6 +46,13 @@ if st.button("Search"):
                 results = response.json()
                 all_results.append(results)
                 answer_box = results.get('answer_box')
+                raw_html_file = results.get('search_metadata', {}).get('raw_html_file')
+                if raw_html_file:
+                    raw_html_files.append({
+                        "keyword": keyword,
+                        "location": location_list[i % len(location_list)],
+                        "raw_html_file": raw_html_file
+                    })
                 if answer_box:
                     # Convert answer_box to string
                     answer_boxes.append(str(answer_box))
@@ -65,18 +75,38 @@ if st.button("Search"):
             st.write("### Similarity Matrix")
             st.write(cosine_matrix)
 
-            # Export similarity matrix
-            df = pd.DataFrame(cosine_matrix)
-            csv = df.to_csv(index=False)
-            st.download_button(
-                label="Download Similarity Matrix as CSV",
-                data=csv,
-                file_name=f'similarity_matrix_{keyword}.csv',
-                mime='text/csv',
-            )
+            # Combine similarity data
+            for row_idx, row in enumerate(cosine_matrix):
+                combined_similarity_data.append({
+                    "keyword": keyword,
+                    "location": location_list[row_idx % len(location_list)],
+                    **{f"similarity_{col_idx + 1}": value for col_idx, value in enumerate(row)}
+                })
         else:
             st.write("No answer boxes found in the results.")
 
         if no_answer_box_indices:
             st.write("### Requests with No Answer Box")
             st.write(f"No answer box found in the following requests: {no_answer_box_indices}")
+
+    # Export combined similarity matrix
+    if combined_similarity_data:
+        df_similarity = pd.DataFrame(combined_similarity_data)
+        csv_similarity = df_similarity.to_csv(index=False)
+        st.download_button(
+            label="Download Combined Similarity Matrix as CSV",
+            data=csv_similarity,
+            file_name='combined_similarity_matrix.csv',
+            mime='text/csv',
+        )
+
+    # Export raw HTML files
+    if raw_html_files:
+        df_raw_html = pd.DataFrame(raw_html_files)
+        csv_raw_html = df_raw_html.to_csv(index=False)
+        st.download_button(
+            label="Download Raw HTML Files as CSV",
+            data=csv_raw_html,
+            file_name='raw_html_files.csv',
+            mime='text/csv',
+        )
