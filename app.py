@@ -3,7 +3,7 @@ import requests
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-st.title("Google Search API with SerpAPI")
+st.title("AIO Content Similarity Checker")
 
 query = st.text_input("Search Query", "bora bora")
 locations = st.text_area("Locations (semicolon-separated)", "Austin, Texas, United States; New York, New York, United States; San Francisco, California, United States")
