@@ -1,3 +1,2 @@
 streamlit
-google-search-results
-serpapi
+google-search-results==2.4.2
