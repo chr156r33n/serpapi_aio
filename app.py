@@ -37,7 +37,8 @@ if st.button("Search"):
             all_results.append(results)
             answer_box = results.get('answer_box')
             if answer_box:
-                answer_boxes.append(answer_box)
+                # Convert answer_box to string
+                answer_boxes.append(str(answer_box))
         except requests.exceptions.RequestException as e:
             st.error(f"Error: {e}")
             break
