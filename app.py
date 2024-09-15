@@ -66,6 +66,7 @@ if st.button("Search"):
         ai_overviews = []
         organic_results_list = []
         no_ai_overview_indices = []
+        
         for i in range(num_calls):
             params = {
                 "engine": "google",
@@ -137,7 +138,7 @@ if st.button("Search"):
             for result in organic_results_list:
                 st.write(f"- **[{result['title']}]({result['link']})**: {result['snippet']}")
 
-            # Compute similarity for Organic Results
+            # Compute similarity for all Organic Results combined
             organic_texts = [result['snippet'] for result in organic_results_list]
             vectorizer_org = TfidfVectorizer().fit_transform(organic_texts)
             vectors_org = vectorizer_org.toarray()
