@@ -15,6 +15,26 @@ no_cache = st.checkbox("No Cache", True)
 api_key = st.text_input("API Key", "secret_api_key", type="password")
 num_calls = st.number_input("Number of API Calls per Keyword", min_value=1, max_value=10, value=1)
 
+def extract_ai_overview_text_and_links(ai_overview):
+    """Extracts text snippets and references from the ai_overview JSON structure."""
+    snippets = []
+    references = []
+    
+    for block in ai_overview.get('text_blocks', []):
+        if block['type'] == 'paragraph':
+            snippets.append(block['snippet'])
+        elif block['type'] == 'list':
+            for item in block['list']:
+                snippets.append(item['snippet'])
+    
+    for reference in ai_overview.get('references', []):
+        references.append({
+            "title": reference['title'],
+            "link": reference['link']
+        })
+    
+    return ' '.join(snippets), references
+
 if st.button("Search"):
     url = "https://serpapi.com/search"
     keyword_list = [keyword.strip() for keyword in keywords.split(";")]
@@ -55,7 +75,7 @@ if st.button("Search"):
                     })
                 if ai_overview:
                     # Convert ai_overview to string
-                    ai_overviews.append(str(ai_overview))
+                    ai_overviews.append(ai_overview)
                 else:
                     no_ai_overview_indices.append(i + 1)
             except requests.exceptions.RequestException as e:
@@ -65,10 +85,18 @@ if st.button("Search"):
         if ai_overviews:
             st.write("### AIO Boxes")
             for idx, ai_overview in enumerate(ai_overviews):
-                st.write(f"**AIO Box {idx + 1}:** {ai_overview}\n")
+                # Use the new function to extract text and links
+                overview_text, references = extract_ai_overview_text_and_links(ai_overview)
+                st.write(f"**AIO Box {idx + 1}:** {overview_text}\n")
+                
+                # Display references
+                if references:
+                    st.write("**References:**")
+                    for ref in references:
+                        st.write(f"- [{ref['title']}]({ref['link']})")
 
             # Compute similarity
-            vectorizer = TfidfVectorizer().fit_transform(ai_overviews)
+            vectorizer = TfidfVectorizer().fit_transform([overview_text for overview_text, _ in ai_overviews])
             vectors = vectorizer.toarray()
             cosine_matrix = cosine_similarity(vectors)
 
