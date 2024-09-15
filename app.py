@@ -26,8 +26,8 @@ if st.button("Search"):
     for keyword in keyword_list:
         st.write(f"## Results for Keyword: {keyword}")
         all_results = []
-        answer_boxes = []
-        no_answer_box_indices = []
+        ai_overviews = []
+        no_ai_overview_indices = []
         for i in range(num_calls):
             params = {
                 "engine": "google",
@@ -45,7 +45,7 @@ if st.button("Search"):
                 response.raise_for_status()  # Raise an error for bad status codes
                 results = response.json()
                 all_results.append(results)
-                answer_box = results.get('answer_box')
+                ai_overview = results.get('ai_overview')
                 raw_html_file = results.get('search_metadata', {}).get('raw_html_file')
                 if raw_html_file:
                     raw_html_files.append({
@@ -53,22 +53,22 @@ if st.button("Search"):
                         "location": location_list[i % len(location_list)],
                         "raw_html_file": raw_html_file
                     })
-                if answer_box:
-                    # Convert answer_box to string
-                    answer_boxes.append(str(answer_box))
+                if ai_overview:
+                    # Convert ai_overview to string
+                    ai_overviews.append(str(ai_overview))
                 else:
-                    no_answer_box_indices.append(i + 1)
+                    no_ai_overview_indices.append(i + 1)
             except requests.exceptions.RequestException as e:
                 st.error(f"Error: {e}")
                 break
 
-        if answer_boxes:
+        if ai_overviews:
             st.write("### Answer Boxes")
-            for idx, answer_box in enumerate(answer_boxes):
-                st.write(f"**Answer Box {idx + 1}:** {answer_box}\n")
+            for idx, ai_overview in enumerate(ai_overviews):
+                st.write(f"**Answer Box {idx + 1}:** {ai_overview}\n")
 
             # Compute similarity
-            vectorizer = TfidfVectorizer().fit_transform(answer_boxes)
+            vectorizer = TfidfVectorizer().fit_transform(ai_overviews)
             vectors = vectorizer.toarray()
             cosine_matrix = cosine_similarity(vectors)
 
@@ -85,9 +85,9 @@ if st.button("Search"):
         else:
             st.write("No answer boxes found in the results.")
 
-        if no_answer_box_indices:
+        if no_ai_overview_indices:
             st.write("### Requests with No Answer Box")
-            st.write(f"No answer box found in the following requests: {no_answer_box_indices}")
+            st.write(f"No answer box found in the following requests: {no_ai_overview_indices}")
 
     # Export combined similarity matrix
     if combined_similarity_data:
