@@ -3,6 +3,7 @@ import requests
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
+from collections import Counter
 
 st.title("Google Search API with SerpAPI")
 
@@ -138,19 +139,20 @@ if st.button("Search"):
             for result in organic_results_list:
                 st.write(f"- **[{result['title']}]({result['link']})**: {result['snippet']}")
 
-            # Compute similarity for all Organic Results combined
-            organic_texts = [result['snippet'] for result in organic_results_list]
-            vectorizer_org = TfidfVectorizer().fit_transform(organic_texts)
-            vectors_org = vectorizer_org.toarray()
-            cosine_matrix_org = cosine_similarity(vectors_org)
+            # Combine all links from organic results for comparison
+            organic_links = [result['link'] for result in organic_results_list]
 
-            st.write("### Organic Results Similarity Matrix")
-            st.write(cosine_matrix_org)
+            # Count occurrences of each URL
+            link_counts = Counter(organic_links)
 
-            # Display the combined organic results for clarity
-            st.write("### Combined Organic Results")
-            for result in organic_results_list:
-                st.write(f"- **[{result['title']}]({result['link']})**: {result['snippet']}")
+            # Display the counts of each URL
+            st.write("### URL Occurrences in Organic Results")
+            for link, count in link_counts.items():
+                st.write(f"- {link}: {count} times")
+
+            # If you want to know how many unique URLs there are
+            unique_urls = len(link_counts)
+            st.write(f"### Total Unique URLs: {unique_urls}")
 
         if no_ai_overview_indices:
             st.write("### Requests with No AIO Box")
