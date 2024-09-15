@@ -65,7 +65,7 @@ if st.button("Search"):
         st.write(f"## Results for Keyword: {keyword}")
         all_results = []
         ai_overviews = []
-        organic_results_list = []
+        organic_results_per_call = []  # List to hold organic results for each API call
         no_ai_overview_indices = []
         
         for i in range(num_calls):
@@ -101,8 +101,8 @@ if st.button("Search"):
                 else:
                     no_ai_overview_indices.append(i + 1)
 
-                # Extract organic results
-                organic_results_list.extend(extract_organic_results(organic_results))
+                # Extract organic results and store them for this call
+                organic_results_per_call.append(extract_organic_results(organic_results))
                 
             except requests.exceptions.RequestException as e:
                 st.error(f"Error: {e}")
@@ -134,25 +134,51 @@ if st.button("Search"):
         else:
             st.write("No AIO boxes found in the results.")
 
-        if organic_results_list:
+        if organic_results_per_call:
             st.write("### Organic Results")
-            for result in organic_results_list:
-                st.write(f"- **[{result['title']}]({result['link']})**: {result['snippet']}")
-
-            # Combine all links from organic results for comparison
-            organic_links = [result['link'] for result in organic_results_list]
+            all_links = []  # To hold all links for comparison
+            for call_results in organic_results_per_call:
+                for result in call_results:
+                    st.write(f"- **[{result['title']}]({result['link']})**: {result['snippet']}")
+                    all_links.append(result['link'])
 
             # Count occurrences of each URL
-            link_counts = Counter(organic_links)
+            link_counts = Counter(all_links)
 
-            # Display the counts of each URL
+            # Create a matrix to show shared vs distinct URLs
+            total_calls = len(organic_results_per_call)
+            shared_urls = {url: count for url, count in link_counts.items() if count > 1}
+            distinct_urls = {url: count for url, count in link_counts.items() if count == 1}
+
+            # Calculate percentages
+            shared_count = len(shared_urls)
+            distinct_count = len(distinct_urls)
+            total_count = shared_count + distinct_count
+
+            if total_count > 0:
+                shared_percentage = (shared_count / total_count) * 100
+                distinct_percentage = (distinct_count / total_count) * 100
+            else:
+                shared_percentage = 0
+                distinct_percentage = 0
+
+            # Display the results
             st.write("### URL Occurrences in Organic Results")
-            for link, count in link_counts.items():
-                st.write(f"- {link}: {count} times")
+            st.write(f"- Total URLs: {total_count}")
+            st.write(f"- Shared URLs: {shared_count} ({shared_percentage:.2f}%)")
+            st.write(f"- Distinct URLs: {distinct_count} ({distinct_percentage:.2f}%)")
 
-            # If you want to know how many unique URLs there are
-            unique_urls = len(link_counts)
-            st.write(f"### Total Unique URLs: {unique_urls}")
+            # Display the shared URLs
+            if shared_urls:
+                st.write("### Shared URLs:")
+                for url in shared_urls:
+                    st.write(f"- {url}: {link_counts[url]} times")
+
+            # Display the distinct URLs
+            if distinct_urls:
+                st.write("### Distinct URLs:")
+                for url in distinct_urls:
+                    st.write(f"- {url}: {link_counts[url]} time")
 
         if no_ai_overview_indices:
             st.write("### Requests with No AIO Box")
