@@ -147,6 +147,11 @@ if st.button("Search"):
             st.write("### Organic Results Similarity Matrix")
             st.write(cosine_matrix_org)
 
+            # Display the combined organic results for clarity
+            st.write("### Combined Organic Results")
+            for result in organic_results_list:
+                st.write(f"- **[{result['title']}]({result['link']})**: {result['snippet']}")
+
         if no_ai_overview_indices:
             st.write("### Requests with No AIO Box")
             st.write(f"No AIO box found in the following requests: {no_ai_overview_indices}")
