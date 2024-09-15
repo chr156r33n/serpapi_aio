@@ -21,16 +21,18 @@ def extract_ai_overview_text_and_links(ai_overview):
     references = []
     
     for block in ai_overview.get('text_blocks', []):
-        if block['type'] == 'paragraph':
-            snippets.append(block['snippet'])
-        elif block['type'] == 'list':
-            for item in block['list']:
-                snippets.append(item['snippet'])
+        if 'type' in block:
+            if block['type'] == 'paragraph' and 'snippet' in block:
+                snippets.append(block['snippet'])
+            elif block['type'] == 'list' and 'list' in block:
+                for item in block['list']:
+                    if 'snippet' in item:
+                        snippets.append(item['snippet'])
     
     for reference in ai_overview.get('references', []):
         references.append({
-            "title": reference['title'],
-            "link": reference['link']
+            "title": reference.get('title', 'No title available'),
+            "link": reference.get('link', '#')
         })
     
     # Return default message if no snippets are found
