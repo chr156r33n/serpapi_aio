@@ -5,6 +5,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 from collections import Counter
 import time  # Import time for adding delays
+import random  # Import random for shuffling
 
 st.title("Google Search API with SerpAPI")
 
@@ -69,13 +70,16 @@ if st.button("Search"):
         organic_results_per_call = []  # List to hold organic results for each API call
         references_per_call = []  # List to hold references for each API call
         no_ai_overview_indices = []
-        
+
+        # Shuffle the locations for this keyword
+        random.shuffle(location_list)
+
         for i in range(num_calls):
-            # Reset parameters for each API call
+            # Use the shuffled location for each API call
             params = {
                 "engine": "google",
                 "q": keyword,
-                "location": location_list[i % len(location_list)],  # Rotate through location values
+                "location": location_list[i % len(location_list)],  # Use the current location in order
                 "google_domain": google_domain,
                 "gl": gl,
                 "hl": hl,
