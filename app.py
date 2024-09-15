@@ -33,7 +33,22 @@ def extract_ai_overview_text_and_links(ai_overview):
             "link": reference['link']
         })
     
+    # Return default message if no snippets are found
+    if not snippets:
+        snippets.append("No content available.")
+    
     return ' '.join(snippets), references
+
+def extract_organic_results(organic_results):
+    """Extracts titles and snippets from organic results."""
+    results = []
+    for result in organic_results:
+        results.append({
+            "title": result['title'],
+            "snippet": result['snippet'],
+            "link": result['link']
+        })
+    return results
 
 if st.button("Search"):
     url = "https://serpapi.com/search"
@@ -47,6 +62,7 @@ if st.button("Search"):
         st.write(f"## Results for Keyword: {keyword}")
         all_results = []
         ai_overviews = []
+        organic_results_list = []
         no_ai_overview_indices = []
         for i in range(num_calls):
             params = {
@@ -66,27 +82,35 @@ if st.button("Search"):
                 results = response.json()
                 all_results.append(results)
                 ai_overview = results.get('ai_overview')
+                organic_results = results.get('organic_results', [])
                 raw_html_file = results.get('search_metadata', {}).get('raw_html_file')
+                
                 if raw_html_file:
                     raw_html_files.append({
                         "keyword": keyword,
                         "location": location_list[i % len(location_list)],
                         "raw_html_file": raw_html_file
                     })
+                
                 if ai_overview:
-                    # Convert ai_overview to string
                     ai_overviews.append(ai_overview)
                 else:
                     no_ai_overview_indices.append(i + 1)
+
+                # Extract organic results
+                organic_results_list.extend(extract_organic_results(organic_results))
+                
             except requests.exceptions.RequestException as e:
                 st.error(f"Error: {e}")
                 break
 
         if ai_overviews:
             st.write("### AIO Boxes")
+            ai_overview_texts = []
             for idx, ai_overview in enumerate(ai_overviews):
                 # Use the new function to extract text and links
                 overview_text, references = extract_ai_overview_text_and_links(ai_overview)
+                ai_overview_texts.append(overview_text)
                 st.write(f"**AIO Box {idx + 1}:** {overview_text}\n")
                 
                 # Display references
@@ -95,23 +119,30 @@ if st.button("Search"):
                     for ref in references:
                         st.write(f"- [{ref['title']}]({ref['link']})")
 
-            # Compute similarity
-            vectorizer = TfidfVectorizer().fit_transform([overview_text for overview_text, _ in ai_overviews])
-            vectors = vectorizer.toarray()
-            cosine_matrix = cosine_similarity(vectors)
+            # Compute similarity for AI Overviews
+            vectorizer_ai = TfidfVectorizer().fit_transform(ai_overview_texts)
+            vectors_ai = vectorizer_ai.toarray()
+            cosine_matrix_ai = cosine_similarity(vectors_ai)
 
-            st.write("### Similarity Matrix")
-            st.write(cosine_matrix)
+            st.write("### AI Overview Similarity Matrix")
+            st.write(cosine_matrix_ai)
 
-            # Combine similarity data
-            for row_idx, row in enumerate(cosine_matrix):
-                combined_similarity_data.append({
-                    "keyword": keyword,
-                    "location": location_list[row_idx % len(location_list)],
-                    **{f"similarity_{col_idx + 1}": value for col_idx, value in enumerate(row)}
-                })
         else:
             st.write("No AIO boxes found in the results.")
+
+        if organic_results_list:
+            st.write("### Organic Results")
+            for result in organic_results_list:
+                st.write(f"- **[{result['title']}]({result['link']})**: {result['snippet']}")
+
+            # Compute similarity for Organic Results
+            organic_texts = [result['snippet'] for result in organic_results_list]
+            vectorizer_org = TfidfVectorizer().fit_transform(organic_texts)
+            vectors_org = vectorizer_org.toarray()
+            cosine_matrix_org = cosine_similarity(vectors_org)
+
+            st.write("### Organic Results Similarity Matrix")
+            st.write(cosine_matrix_org)
 
         if no_ai_overview_indices:
             st.write("### Requests with No AIO Box")
