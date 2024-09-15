@@ -1,7 +1,6 @@
 google-search-results
 requests
 scikit-learn
-collections
 time
 random
 pandas
