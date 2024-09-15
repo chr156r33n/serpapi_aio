@@ -82,21 +82,9 @@ if st.button("Search"):
                 "api_key": api_key
             }
 
-            # Debugging: Print the parameters being sent
-            st.write(f"Making API call with parameters: {params}")
-
             try:
                 response = requests.get(url, params=params)
                 response.raise_for_status()  # Raise an error for bad status codes
-                
-                # Log the full response content for debugging
-                st.write(f"Response Status Code: {response.status_code}")
-                st.write(f"Response Content: {response.text}")
-
-                # Check if the response content is empty
-                if not response.content:
-                    st.error("Error: Received an empty response from the API.")
-                    continue
                 
                 results = response.json()  # Attempt to parse the JSON response
                 all_results.append(results)
@@ -116,8 +104,6 @@ if st.button("Search"):
                     # Extract references and store them for this call
                     _, references = extract_ai_overview_text_and_links(ai_overview)
                     references_per_call.append(references)
-                else:
-                    no_ai_overview_indices.append(i + 1)
 
                 # Extract organic results and store them for this call
                 organic_results_per_call.append(extract_organic_results(organic_results))
@@ -125,14 +111,8 @@ if st.button("Search"):
                 # Optional: Add a delay to avoid hitting rate limits
                 time.sleep(1)  # Adjust the delay as needed
 
-            except requests.exceptions.RequestException as e:
-                st.error(f"Request Error: {e} for keyword: {keyword}, location: {shuffled_locations[i % len(shuffled_locations)]}, iteration: {i + 1}")
-                continue  # Continue to the next API call
-            except ValueError as e:
-                st.error(f"JSON Parsing Error: {e} for keyword: {keyword}, location: {shuffled_locations[i % len(shuffled_locations)]}, iteration: {i + 1}")
-                continue  # Continue to the next API call
             except Exception as e:
-                st.error(f"Unexpected Error: {e} for keyword: {keyword}, location: {shuffled_locations[i % len(shuffled_locations)]}, iteration: {i + 1}")
+                st.error(f"Error for keyword: {keyword}, location: {shuffled_locations[i % len(shuffled_locations)]}, iteration: {i + 1}. {str(e)}")
                 continue  # Continue to the next API call
 
     # Check if raw_html_files is not empty before creating DataFrame
@@ -148,5 +128,36 @@ if st.button("Search"):
     else:
         st.warning("No raw HTML files were collected.")
 
-    # Process organic results and references as needed
-    # ... rest of the code for processing organic results and references ...
+    # Compare URLs in AI Overviews and Organic Results
+    if ai_overviews and organic_results_per_call:
+        all_ai_links = set()
+        all_organic_links = set()
+
+        # Collect all links from AI Overviews
+        for ai_overview in ai_overviews:
+            for reference in ai_overview.get('references', []):
+                all_ai_links.add(reference['link'])
+
+        # Collect all links from Organic Results
+        for organic_results in organic_results_per_call:
+            for result in organic_results:
+                all_organic_links.add(result['link'])
+
+        # Compare URLs
+        shared_links = all_ai_links.intersection(all_organic_links)
+        distinct_ai_links = all_ai_links.difference(all_organic_links)
+        distinct_organic_links = all_organic_links.difference(all_ai_links)
+
+        # Display results
+        st.write("### URL Comparison Results")
+        st.write(f"- Shared Links: {len(shared_links)}")
+        for link in shared_links:
+            st.write(f"  - {link}")
+
+        st.write(f"- Distinct AI Overview Links: {len(distinct_ai_links)}")
+        for link in distinct_ai_links:
+            st.write(f"  - {link}")
+
+        st.write(f"- Distinct Organic Result Links: {len(distinct_organic_links)}")
+        for link in distinct_organic_links:
+            st.write(f"  - {link}")
