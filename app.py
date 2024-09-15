@@ -1,8 +1,5 @@
 import streamlit as st
 import requests
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-import pandas as pd
 from collections import Counter
 import time  # Import time for adding delays
 import random  # Import random for shuffling
@@ -38,10 +35,6 @@ def extract_ai_overview_text_and_links(ai_overview):
             "link": reference.get('link', '#')
         })
     
-    # Return default message if no snippets are found
-    if not snippets:
-        snippets.append("No content available.")
-    
     return ' '.join(snippets), references
 
 def extract_organic_results(organic_results):
@@ -72,14 +65,15 @@ if st.button("Search"):
         no_ai_overview_indices = []
 
         # Shuffle the locations for this keyword
-        random.shuffle(location_list)
+        shuffled_locations = location_list.copy()  # Create a copy to shuffle
+        random.shuffle(shuffled_locations)
 
         for i in range(num_calls):
             # Use the shuffled location for each API call
             params = {
                 "engine": "google",
                 "q": keyword,
-                "location": location_list[i % len(location_list)],  # Use the current location in order
+                "location": shuffled_locations[i % len(shuffled_locations)],  # Use the current location in order
                 "google_domain": google_domain,
                 "gl": gl,
                 "hl": hl,
@@ -94,6 +88,10 @@ if st.button("Search"):
                 response = requests.get(url, params=params)
                 response.raise_for_status()  # Raise an error for bad status codes
                 
+                # Log the full response content for debugging
+                st.write(f"Response Status Code: {response.status_code}")
+                st.write(f"Response Content: {response.text}")
+
                 # Check if the response content is empty
                 if not response.content:
                     st.error("Error: Received an empty response from the API.")
@@ -108,7 +106,7 @@ if st.button("Search"):
                 if raw_html_file:
                     raw_html_files.append({
                         "keyword": keyword,
-                        "location": location_list[i % len(location_list)],
+                        "location": shuffled_locations[i % len(shuffled_locations)],
                         "raw_html_file": raw_html_file
                     })
                 
@@ -127,13 +125,13 @@ if st.button("Search"):
                 time.sleep(1)  # Adjust the delay as needed
 
             except requests.exceptions.RequestException as e:
-                st.error(f"Request Error: {e} for keyword: {keyword}, location: {location_list[i % len(location_list)]}, iteration: {i + 1}")
+                st.error(f"Request Error: {e} for keyword: {keyword}, location: {shuffled_locations[i % len(shuffled_locations)]}, iteration: {i + 1}")
                 continue  # Continue to the next API call
             except ValueError as e:
-                st.error(f"JSON Parsing Error: {e} for keyword: {keyword}, location: {location_list[i % len(location_list)]}, iteration: {i + 1}")
+                st.error(f"JSON Parsing Error: {e} for keyword: {keyword}, location: {shuffled_locations[i % len(shuffled_locations)]}, iteration: {i + 1}")
                 continue  # Continue to the next API call
             except Exception as e:
-                st.error(f"Unexpected Error: {e} for keyword: {keyword}, location: {location_list[i % len(location_list)]}, iteration: {i + 1}")
+                st.error(f"Unexpected Error: {e} for keyword: {keyword}, location: {shuffled_locations[i % len(shuffled_locations)]}, iteration: {i + 1}")
                 continue  # Continue to the next API call
 
         if ai_overviews:
