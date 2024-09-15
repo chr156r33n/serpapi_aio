@@ -84,7 +84,13 @@ if st.button("Search"):
             try:
                 response = requests.get(url, params=params)
                 response.raise_for_status()  # Raise an error for bad status codes
-                results = response.json()
+                
+                # Check if the response content is empty
+                if not response.content:
+                    st.error("Error: Received an empty response from the API.")
+                    continue
+                
+                results = response.json()  # Attempt to parse the JSON response
                 all_results.append(results)
                 ai_overview = results.get('ai_overview')
                 organic_results = results.get('organic_results', [])
@@ -111,39 +117,18 @@ if st.button("Search"):
             except requests.exceptions.RequestException as e:
                 st.error(f"Error: {e}")
                 break
+            except ValueError as e:
+                st.error(f"Error parsing JSON response: {e}")
+                break
 
         if ai_overviews:
-            st.write("### AIO Boxes")
-            ai_overview_texts = []
-            for idx, ai_overview in enumerate(ai_overviews):
-                # Use the new function to extract text and links
-                overview_text, references = extract_ai_overview_text_and_links(ai_overview)
-                ai_overview_texts.append(overview_text)
-                st.write(f"**AIO Box {idx + 1}:** {overview_text}\n")
-                
-                # Display references
-                if references:
-                    st.write("**References:**")
-                    for ref in references:
-                        st.write(f"- [{ref['title']}]({ref['link']})")
-
-            # Compute similarity for AI Overviews
-            vectorizer_ai = TfidfVectorizer().fit_transform(ai_overview_texts)
-            vectors_ai = vectorizer_ai.toarray()
-            cosine_matrix_ai = cosine_similarity(vectors_ai)
-
-            st.write("### AI Overview Similarity Matrix")
-            st.write(cosine_matrix_ai)
-
-        else:
-            st.write("No AIO boxes found in the results.")
+            # Removed printing of AI Overviews
+            pass
 
         if organic_results_per_call:
-            st.write("### Organic Results")
             all_links = []  # To hold all links for comparison
             for call_results in organic_results_per_call:
                 for result in call_results:
-                    st.write(f"- **[{result['title']}]({result['link']})**: {result['snippet']}")
                     all_links.append(result['link'])
 
             # Count occurrences of each URL
@@ -186,7 +171,6 @@ if st.button("Search"):
 
         # Reference comparison
         if references_per_call:
-            st.write("### AI Overview References")
             all_references = []  # To hold all references for comparison
             for call_references in references_per_call:
                 for ref in call_references:
