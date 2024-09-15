@@ -71,6 +71,7 @@ if st.button("Search"):
         no_ai_overview_indices = []
         
         for i in range(num_calls):
+            # Reset parameters for each API call
             params = {
                 "engine": "google",
                 "q": keyword,
@@ -81,6 +82,9 @@ if st.button("Search"):
                 "no_cache": str(no_cache).lower(),
                 "api_key": api_key
             }
+
+            # Debugging: Print the parameters being sent
+            st.write(f"Making API call with parameters: {params}")
 
             try:
                 response = requests.get(url, params=params)
