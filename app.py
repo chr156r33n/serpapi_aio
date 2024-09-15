@@ -127,10 +127,13 @@ if st.button("Search"):
                 time.sleep(1)  # Adjust the delay as needed
 
             except requests.exceptions.RequestException as e:
-                st.error(f"Error: {e}")
+                st.error(f"Request Error: {e} for keyword: {keyword}, location: {location_list[i % len(location_list)]}, iteration: {i + 1}")
                 continue  # Continue to the next API call
             except ValueError as e:
-                st.error(f"Error parsing JSON response: {e}")
+                st.error(f"JSON Parsing Error: {e} for keyword: {keyword}, location: {location_list[i % len(location_list)]}, iteration: {i + 1}")
+                continue  # Continue to the next API call
+            except Exception as e:
+                st.error(f"Unexpected Error: {e} for keyword: {keyword}, location: {location_list[i % len(location_list)]}, iteration: {i + 1}")
                 continue  # Continue to the next API call
 
         if ai_overviews:
