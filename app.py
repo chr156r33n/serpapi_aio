@@ -134,119 +134,8 @@ if st.button("Search"):
                 st.error(f"Unexpected Error: {e} for keyword: {keyword}, location: {shuffled_locations[i % len(shuffled_locations)]}, iteration: {i + 1}")
                 continue  # Continue to the next API call
 
-        if ai_overviews:
-            # Removed printing of AI Overviews
-            pass
-
-        if organic_results_per_call:
-            all_links = []  # To hold all links for comparison
-            for call_results in organic_results_per_call:
-                for result in call_results:
-                    all_links.append(result['link'])
-
-            # Count occurrences of each URL
-            link_counts = Counter(all_links)
-
-            # Create a matrix to show shared vs distinct URLs
-            total_calls = len(organic_results_per_call)
-            shared_urls = {url: count for url, count in link_counts.items() if count > 1}
-            distinct_urls = {url: count for url, count in link_counts.items() if count == 1}
-
-            # Calculate percentages
-            shared_count = len(shared_urls)
-            distinct_count = len(distinct_urls)
-            total_count = shared_count + distinct_count
-
-            if total_count > 0:
-                shared_percentage = (shared_count / total_count) * 100
-                distinct_percentage = (distinct_count / total_count) * 100
-            else:
-                shared_percentage = 0
-                distinct_percentage = 0
-
-            # Display the results
-            st.write("### URL Occurrences in Organic Results")
-            st.write(f"- Total URLs: {total_count}")
-            st.write(f"- Shared URLs: {shared_count} ({shared_percentage:.2f}%)")
-            st.write(f"- Distinct URLs: {distinct_count} ({distinct_percentage:.2f}%)")
-
-            # Display the shared URLs
-            if shared_urls:
-                st.write("### Shared URLs:")
-                for url in shared_urls:
-                    st.write(f"- {url}: {link_counts[url]} times")
-
-            # Display the distinct URLs
-            if distinct_urls:
-                st.write("### Distinct URLs:")
-                for url in distinct_urls:
-                    st.write(f"- {url}: {link_counts[url]} time")
-
-        # Reference comparison
-        if references_per_call:
-            all_references = []  # To hold all references for comparison
-            for call_references in references_per_call:
-                for ref in call_references:
-                    all_references.append(ref['link'])  # Collecting links from references
-
-            # Count occurrences of each reference link
-            reference_counts = Counter(all_references)
-
-            # Create a matrix to show shared vs distinct references
-            total_references = len(reference_counts)
-            shared_references = {ref: count for ref, count in reference_counts.items() if count > 1}
-            distinct_references = {ref: count for ref, count in reference_counts.items() if count == 1}
-
-            # Calculate percentages
-            shared_ref_count = len(shared_references)
-            distinct_ref_count = len(distinct_references)
-
-            if total_references > 0:
-                shared_ref_percentage = (shared_ref_count / total_references) * 100
-                distinct_ref_percentage = (distinct_ref_count / total_references) * 100
-            else:
-                shared_ref_percentage = 0
-                distinct_ref_percentage = 0
-
-            # Display the results for references
-            st.write("### Reference Occurrences in AI Overviews")
-            st.write(f"- Total References: {total_references}")
-            st.write(f"- Shared References: {shared_ref_count} ({shared_ref_percentage:.2f}%)")
-            st.write(f"- Distinct References: {distinct_ref_count} ({distinct_ref_percentage:.2f}%)")
-
-            # Display the shared references
-            if shared_references:
-                st.write("### Shared References:")
-                for ref in shared_references:
-                    st.write(f"- {ref}: {reference_counts[ref]} times")
-
-            # Display the distinct references
-            if distinct_references:
-                st.write("### Distinct References:")
-                for ref in distinct_references:
-                    st.write(f"- {ref}: {reference_counts[ref]} time")
-
-        if no_ai_overview_indices:
-            st.write("### Requests with No AIO Box")
-            st.write(f"No AIO box found in the following requests: {no_ai_overview_indices}")
-
-    # Export combined similarity matrix
-    if combined_similarity_data:
-        df_similarity = pd.DataFrame(combined_similarity_data)
-        csv_similarity = df_similarity.to_csv(index=False)
-        st.download_button(
-            label="Download Combined Similarity Matrix as CSV",
-            data=csv_similarity,
-            file_name='combined_similarity_matrix.csv',
-            mime='text/csv',
-        )
-
-    # Display and export raw HTML files
+    # Check if raw_html_files is not empty before creating DataFrame
     if raw_html_files:
-        st.write("### Raw HTML Files")
-        for entry in raw_html_files:
-            st.write(f"Keyword: {entry['keyword']}, Location: {entry['location']}, [Raw HTML File]({entry['raw_html_file']})")
-
         df_raw_html = pd.DataFrame(raw_html_files)
         csv_raw_html = df_raw_html.to_csv(index=False)
         st.download_button(
@@ -255,3 +144,7 @@ if st.button("Search"):
             file_name='raw_html_files.csv',
             mime='text/csv',
         )
+    else:
+        st.warning("No raw HTML files were collected.")
+
+    # ... rest of the code for processing organic results and references ...
