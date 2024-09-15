@@ -115,49 +115,50 @@ if st.button("Search"):
                 st.error(f"Error for keyword: {keyword}, location: {shuffled_locations[i % len(shuffled_locations)]}, iteration: {i + 1}. {str(e)}")
                 continue  # Continue to the next API call
 
-    # Check if raw_html_files is not empty before creating DataFrame
-    if raw_html_files:
-        df_raw_html = pd.DataFrame(raw_html_files)
-        csv_raw_html = df_raw_html.to_csv(index=False)
-        st.download_button(
-            label="Download Raw HTML Files as CSV",
-            data=csv_raw_html,
-            file_name='raw_html_files.csv',
-            mime='text/csv',
-        )
-    else:
-        st.warning("No raw HTML files were collected.")
+        # Check if raw_html_files is not empty before creating DataFrame
+        if raw_html_files:
+            df_raw_html = pd.DataFrame(raw_html_files)
+            csv_raw_html = df_raw_html.to_csv(index=False)
+            st.download_button(
+                label="Download Raw HTML Files as CSV",
+                data=csv_raw_html,
+                file_name='raw_html_files.csv',
+                mime='text/csv',
+            )
+        else:
+            st.warning("No raw HTML files were collected.")
 
-    # Compare URLs in AI Overviews and Organic Results
-    if ai_overviews and organic_results_per_call:
-        all_ai_links = set()
-        all_organic_links = set()
+        # Compare URLs in AI Overviews and Organic Results
+        if ai_overviews and organic_results_per_call:
+            all_ai_links = set()
+            all_organic_links = set()
 
-        # Collect all links from AI Overviews
-        for ai_overview in ai_overviews:
-            for reference in ai_overview.get('references', []):
-                all_ai_links.add(reference['link'])
+            # Collect all links from AI Overviews
+            for ai_overview in ai_overviews:
+                for reference in ai_overview.get('references', []):
+                    all_ai_links.add(reference['link'])
 
-        # Collect all links from Organic Results
-        for organic_results in organic_results_per_call:
-            for result in organic_results:
-                all_organic_links.add(result['link'])
+            # Collect all links from Organic Results
+            for organic_results in organic_results_per_call:
+                for result in organic_results:
+                    all_organic_links.add(result['link'])
 
-        # Compare URLs
-        shared_links = all_ai_links.intersection(all_organic_links)
-        distinct_ai_links = all_ai_links.difference(all_organic_links)
-        distinct_organic_links = all_organic_links.difference(all_ai_links)
+            # Compare URLs
+            shared_links = all_ai_links.intersection(all_organic_links)
+            distinct_ai_links = all_ai_links.difference(all_organic_links)
+            distinct_organic_links = all_organic_links.difference(all_ai_links)
 
-        # Display results
-        st.write("### URL Comparison Results")
-        st.write(f"- Shared Links: {len(shared_links)}")
-        for link in shared_links:
-            st.write(f"  - {link}")
+            # Display results for the current keyword
+            st.write("### URL Comparison Results")
+            st.write(f"**Keyword:** {keyword}")
+            st.write(f"- Shared Links: {len(shared_links)}")
+            for link in shared_links:
+                st.write(f"  - {link}")
 
-        st.write(f"- Distinct AI Overview Links: {len(distinct_ai_links)}")
-        for link in distinct_ai_links:
-            st.write(f"  - {link}")
+            st.write(f"- Distinct AI Overview Links: {len(distinct_ai_links)}")
+            for link in distinct_ai_links:
+                st.write(f"  - {link}")
 
-        st.write(f"- Distinct Organic Result Links: {len(distinct_organic_links)}")
-        for link in distinct_organic_links:
-            st.write(f"  - {link}")
+            st.write(f"- Distinct Organic Result Links: {len(distinct_organic_links)}")
+            for link in distinct_organic_links:
+                st.write(f"  - {link}")
