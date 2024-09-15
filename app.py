@@ -66,6 +66,7 @@ if st.button("Search"):
         all_results = []
         ai_overviews = []
         organic_results_per_call = []  # List to hold organic results for each API call
+        references_per_call = []  # List to hold references for each API call
         no_ai_overview_indices = []
         
         for i in range(num_calls):
@@ -98,6 +99,9 @@ if st.button("Search"):
                 
                 if ai_overview:
                     ai_overviews.append(ai_overview)
+                    # Extract references and store them for this call
+                    _, references = extract_ai_overview_text_and_links(ai_overview)
+                    references_per_call.append(references)
                 else:
                     no_ai_overview_indices.append(i + 1)
 
@@ -179,6 +183,51 @@ if st.button("Search"):
                 st.write("### Distinct URLs:")
                 for url in distinct_urls:
                     st.write(f"- {url}: {link_counts[url]} time")
+
+        # Reference comparison
+        if references_per_call:
+            st.write("### AI Overview References")
+            all_references = []  # To hold all references for comparison
+            for call_references in references_per_call:
+                for ref in call_references:
+                    all_references.append(ref['link'])  # Collecting links from references
+
+            # Count occurrences of each reference link
+            reference_counts = Counter(all_references)
+
+            # Create a matrix to show shared vs distinct references
+            total_references = len(reference_counts)
+            shared_references = {ref: count for ref, count in reference_counts.items() if count > 1}
+            distinct_references = {ref: count for ref, count in reference_counts.items() if count == 1}
+
+            # Calculate percentages
+            shared_ref_count = len(shared_references)
+            distinct_ref_count = len(distinct_references)
+
+            if total_references > 0:
+                shared_ref_percentage = (shared_ref_count / total_references) * 100
+                distinct_ref_percentage = (distinct_ref_count / total_references) * 100
+            else:
+                shared_ref_percentage = 0
+                distinct_ref_percentage = 0
+
+            # Display the results for references
+            st.write("### Reference Occurrences in AI Overviews")
+            st.write(f"- Total References: {total_references}")
+            st.write(f"- Shared References: {shared_ref_count} ({shared_ref_percentage:.2f}%)")
+            st.write(f"- Distinct References: {distinct_ref_count} ({distinct_ref_percentage:.2f}%)")
+
+            # Display the shared references
+            if shared_references:
+                st.write("### Shared References:")
+                for ref in shared_references:
+                    st.write(f"- {ref}: {reference_counts[ref]} times")
+
+            # Display the distinct references
+            if distinct_references:
+                st.write("### Distinct References:")
+                for ref in distinct_references:
+                    st.write(f"- {ref}: {reference_counts[ref]} time")
 
         if no_ai_overview_indices:
             st.write("### Requests with No AIO Box")
