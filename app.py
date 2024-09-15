@@ -3,6 +3,7 @@ import requests
 from collections import Counter
 import time  # Import time for adding delays
 import random  # Import random for shuffling
+import pandas as pd  # Ensure pandas is imported
 
 st.title("Google Search API with SerpAPI")
 
@@ -147,4 +148,5 @@ if st.button("Search"):
     else:
         st.warning("No raw HTML files were collected.")
 
+    # Process organic results and references as needed
     # ... rest of the code for processing organic results and references ...
