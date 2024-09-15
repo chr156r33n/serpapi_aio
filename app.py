@@ -4,6 +4,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 from collections import Counter
+import time  # Import time for adding delays
 
 st.title("Google Search API with SerpAPI")
 
@@ -114,12 +115,15 @@ if st.button("Search"):
                 # Extract organic results and store them for this call
                 organic_results_per_call.append(extract_organic_results(organic_results))
                 
+                # Optional: Add a delay to avoid hitting rate limits
+                time.sleep(1)  # Adjust the delay as needed
+
             except requests.exceptions.RequestException as e:
                 st.error(f"Error: {e}")
-                break
+                continue  # Continue to the next API call
             except ValueError as e:
                 st.error(f"Error parsing JSON response: {e}")
-                break
+                continue  # Continue to the next API call
 
         if ai_overviews:
             # Removed printing of AI Overviews
