@@ -63,9 +63,9 @@ if st.button("Search"):
                 break
 
         if ai_overviews:
-            st.write("### Answer Boxes")
+            st.write("### AIO Boxes")
             for idx, ai_overview in enumerate(ai_overviews):
-                st.write(f"**Answer Box {idx + 1}:** {ai_overview}\n")
+                st.write(f"**AIO Box {idx + 1}:** {ai_overview}\n")
 
             # Compute similarity
             vectorizer = TfidfVectorizer().fit_transform(ai_overviews)
@@ -83,11 +83,11 @@ if st.button("Search"):
                     **{f"similarity_{col_idx + 1}": value for col_idx, value in enumerate(row)}
                 })
         else:
-            st.write("No answer boxes found in the results.")
+            st.write("No AIO boxes found in the results.")
 
         if no_ai_overview_indices:
-            st.write("### Requests with No Answer Box")
-            st.write(f"No answer box found in the following requests: {no_ai_overview_indices}")
+            st.write("### Requests with No AIO Box")
+            st.write(f"No AIO box found in the following requests: {no_ai_overview_indices}")
 
     # Export combined similarity matrix
     if combined_similarity_data:
