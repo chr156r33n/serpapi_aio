@@ -9,7 +9,17 @@ import zipfile  # Import zipfile for creating zip files
 
 st.title("Google Search API with SerpAPI")
 
-keywords = st.text_area("Keywords (semicolon-separated)", "bora bora; skin flooding trend; longevity research")
+# Option to enter keywords or upload a file
+keywords_input = st.text_area("Keywords (semicolon-separated)", "bora bora; skin flooding trend; longevity research")
+uploaded_file = st.file_uploader("Or upload a text file with one keyword per line", type=["txt"])
+
+# Process uploaded file if it exists
+if uploaded_file is not None:
+    keywords_input = uploaded_file.read().decode("utf-8").strip()  # Read and decode the file content
+
+# Split keywords from the input
+keyword_list = [keyword.strip() for keyword in keywords_input.split(";") if keyword.strip()]
+
 locations = st.text_area("Locations (semicolon-separated)", "Austin, Texas, United States; New York, New York, United States; San Francisco, California, United States")
 google_domain = st.text_input("Google Domain", "google.com")
 gl = st.text_input("GL", "us")
@@ -20,7 +30,6 @@ num_calls = st.number_input("Number of API Calls per Keyword", min_value=1, max_
 
 if st.button("Search"):
     url = "https://serpapi.com/search"
-    keyword_list = [keyword.strip() for keyword in keywords.split(";")]
     location_list = [location.strip() for location in locations.split(";")]
 
     json_files = []  # List to hold filenames of saved JSON files
