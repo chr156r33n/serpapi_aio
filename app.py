@@ -59,6 +59,8 @@ if st.button("Search"):
     if raw_json_files:
         df_raw_json = pd.DataFrame(raw_json_files)
         csv_raw_json = df_raw_json.to_csv(index=False)
+        
+        # Only show the download button once after all API calls
         st.download_button(
             label="Download Raw JSON Responses as CSV",
             data=csv_raw_json,
