@@ -3,6 +3,8 @@ import requests
 import time  # Import time for adding delays
 import random  # Import random for shuffling
 import pandas as pd  # Ensure pandas is imported
+import json  # Import json for saving JSON files
+from datetime import datetime  # Import datetime for timestamping
 
 st.title("Google Search API with SerpAPI")
 
@@ -46,7 +48,14 @@ if st.button("Search"):
                 response.raise_for_status()  # Raise an error for bad status codes
                 
                 # Save the raw JSON response
-                raw_json_files.append(response.json())
+                json_response = response.json()
+                raw_json_files.append(json_response)
+
+                # Save the JSON response to a file
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                filename = f"{keyword.replace(' ', '_')}_iteration_{i+1}_{timestamp}.json"
+                with open(filename, 'w') as json_file:
+                    json.dump(json_response, json_file, indent=4)
 
                 # Optional: Add a delay to avoid hitting rate limits
                 time.sleep(1)  # Adjust the delay as needed
