@@ -4,6 +4,8 @@ import time  # Import time for adding delays
 import random  # Import random for shuffling
 import json  # Import json for saving JSON files
 from datetime import datetime  # Import datetime for timestamping
+import os  # Import os for file operations
+import zipfile  # Import zipfile for creating zip files
 
 st.title("Google Search API with SerpAPI")
 
@@ -20,6 +22,8 @@ if st.button("Search"):
     url = "https://serpapi.com/search"
     keyword_list = [keyword.strip() for keyword in keywords.split(";")]
     location_list = [location.strip() for location in locations.split(";")]
+
+    json_files = []  # List to hold filenames of saved JSON files
 
     for keyword in keyword_list:
         st.write(f"## Results for Keyword: {keyword}")
@@ -50,6 +54,8 @@ if st.button("Search"):
                 filename = f"{keyword.replace(' ', '_')}_iteration_{i+1}_{timestamp}.json"
                 with open(filename, 'w') as json_file:
                     json.dump(json_response, json_file, indent=4)
+                
+                json_files.append(filename)  # Add filename to the list
 
                 # Optional: Add a delay to avoid hitting rate limits
                 time.sleep(1)  # Adjust the delay as needed
@@ -57,5 +63,21 @@ if st.button("Search"):
             except Exception as e:
                 st.error(f"Error for keyword: {keyword}, location: {shuffled_locations[i % len(shuffled_locations)]}, iteration: {i + 1}. {str(e)}")
                 continue  # Continue to the next API call
+
+    # Create a zip file containing all JSON files
+    zip_filename = "json_responses.zip"
+    with zipfile.ZipFile(zip_filename, 'w') as zipf:
+        for json_file in json_files:
+            zipf.write(json_file)
+            os.remove(json_file)  # Optionally remove the JSON file after zipping
+
+    # Provide a download link for the zip file
+    with open(zip_filename, 'rb') as f:
+        st.download_button(
+            label="Download JSON Files as Zip",
+            data=f,
+            file_name=zip_filename,
+            mime='application/zip',
+        )
 
     st.success("All API calls completed and JSON files saved.")
